@@ -297,7 +297,6 @@ def click(x,y):
     move(whichRow(y), whichColumn(x))
 
 #Hannah's Code
-currentPlayer='w'
 def beginAutomation():
     i=0
     #winner='w'
@@ -306,13 +305,13 @@ def beginAutomation():
         move((moveTo[0]),(moveTo[1]))
         if gameRunning==False:
             break
-        time.sleep(.001)
+        #time.sleep(.001)
         i+=1
         moveTo=random.choice(allValidMoves(gameBoard,currentPlayer))
         move((moveTo[0]),(moveTo[1]))
         if gameRunning==False:
             break
-        time.sleep(.001)
+        #time.sleep(.001)
         i+=1
     return "game over"
 
@@ -334,6 +333,10 @@ def f(n):
     #near the conrners
     if n== (1,0) or n== (1,1) or n== (0,1) or  n==(0,cells-2) or n==(1,cells-2) or n==(1,cells-1) or  n== (cells-2,0) or n== (cells-2,1) or n==(cells-1,1) or  n== (cells-2,cells-1) or  n== (cells-2,cells-2) or  n== (cells-1,cells-2):
         i-=500
+    if n[0]==0 or (cells-1):
+        i+=200
+    if n[1]==0 or (cells-1):
+        i+=200
     tempBoard=copy.deepcopy(gameBoard)
     tempOScore=calculateScore(tempBoard, currentPlayer)
     tempBoard=tempMove(tempBoard,n[0],n[1])
@@ -377,39 +380,60 @@ winner='b'
 #        return min(minimaxChildren)
 
 def terminalNode(board, player):
-    if len(allValidMoves(board, player))==0:
+    moves = allValidMoves(board, player)
+    if len(moves)==0 or moves=="Winner":
         return True
 
 def evalBoard(board, player):
     score=calculateScore(board, player)
-    if player== board[0,0] or  player ==board[0,cells-1] or  player == board[cells-1,0] or  player == board[cells-1,cells-1]:
+    if player== board[0][0] or  player ==board[0][cells-1] or  player == board[cells-1][0] or  player == board[cells-1][cells-1]:
         score += 100
-    if player== board[1,0] or player== board[1,1] or player== board[0,1] or  player==board[0,cells-2] or player==board[1,cells-2] or player==board[1,cells-1] or  player== board[cells-2,0] or player== board[cells-2,1] or player==board[cells-1,1] or  player== board[cells-2,cells-1] or  player== board[cells-2,cells-2] or  player== board[cells-1,cells-2]:
+    if player== board[1][0] or player== board[1][1] or player== board[0][1] or  player==board[0][cells-2] or player==board[1][cells-2] or player==board[1][cells-1] or  player== board[cells-2][0] or player== board[cells-2][1] or player==board[cells-1][1] or  player== board[cells-2][cells-1] or  player== board[cells-2][cells-2] or  player== board[cells-1][cells-2]:
         score-=500
+    score+=(calculateScore(board,player)-calculateScore(gameBoard,player))
+    return score
 
+def notPlayer(player):
+    if player == 'b':
+        return 'w'
+    if player == 'w':
+        return 'b'
+    
 def abminimax(board, player, A=-math.inf, B=math.inf, depth=0, maxTurn=False):
-    if depth==2 or terminalNode(board, player):
-        return calculateScore(board,player)
+    print(player)
+    if depth==2:
+        return calculateScore(board,player)+evalBoard(board,player)
+    if terminalNode(board, player):
+        if calculateScore(board,player)>32:
+            return math.inf
+        else:
+            return -math.inf
     moves=allValidMoves(board, player)
+    depth +=1
     if maxTurn:
         for each in moves:
-            score=abminimax(nextBoard(board,player, each),player)
-            print ('T',score)
+            score=abminimax(nextBoard(board,player, each),notPlayer(player),A,B,depth,not maxTurn)
             if score>A:
                 A=score
-            if A>B:
+            if A>=B:
                 return A
+        return A
     else:
         for each in moves:
-            score=abminimax(nextBoard(board,player, each),player)
-            print ('F',score)
+            score=abminimax(nextBoard(board,player, each),notPlayer(player),A,B,depth,not maxTurn)
+            print(score)
             if score<B:
                 B=score
-            if A>B:
+            if A>=B:
                 return B
+        return B
 
 
-
+def evalMiniMax(board,player):
+    moves={}
+    for each in allValidMoves(board,player):
+        moves[(abminimax(nextBoard(board,player,each),player))]=each
+    return moves[max(moves)]
 
 s.onclick(click)
 
@@ -417,3 +441,5 @@ s.onclick(click)
 drawBoard()
 draw()
 postDraw()
+
+abminimax(gameBoard,currentPlayer)
