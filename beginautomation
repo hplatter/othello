@@ -297,20 +297,18 @@ def click(x,y):
     move(whichRow(y), whichColumn(x))
 
 #Hannah's Code
-currentPlayer='b'
+currentPlayer='w'
 def beginAutomation():
     i=0
-    winner='b'
+    #winner='w'
     while i<((cells*cells)-4):
         moveTo=eval(Evaluate(gameBoard,currentPlayer))
-        print (currentPlayer)
         move((moveTo[0]),(moveTo[1]))
         if gameRunning==False:
             break
         time.sleep(.001)
         i+=1
         moveTo=random.choice(allValidMoves(gameBoard,currentPlayer))
-        print (currentPlayer)
         move((moveTo[0]),(moveTo[1]))
         if gameRunning==False:
             break
@@ -352,10 +350,7 @@ def Evaluate(gameBoard,currentPlayer):
         for each in allValidMoves(gameBoard,currentPlayer):
             evalList[str(each)]=(f((each[0],each[1])))
         i=0
-        if currentPlayer == 'b':
-            otherPlayer='w'
-        else: otherPlayer='b'
-        if (calculateScore(gameBoard, currentPlayer)+calculateScore(gameBoard, otherPlayer))<16:
+        if (calculateScore(gameBoard, 'b')+calculateScore(gameBoard, 'w'))>16:
             maxVal=max(evalList.values())
         else:
             maxVal=min(evalList.values())
